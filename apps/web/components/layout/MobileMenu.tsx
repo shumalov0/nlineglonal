@@ -16,6 +16,7 @@ import {
   LogIn,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Logo } from './Logo'
 import type { NavCategory } from '@/lib/category-nav'
 
 interface Props {
@@ -83,15 +84,8 @@ export function MobileMenu({ open, onClose }: Props) {
           open ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="flex items-center justify-between border-b border-[var(--color-border-light)] px-5 py-4">
-          <Link
-            href="/"
-            onClick={onClose}
-            className="font-display text-lg font-bold"
-          >
-            <span className="text-[var(--color-primary)]">Nline</span>{' '}
-            <span className="text-[var(--color-text)]">Global</span>
-          </Link>
+        <div className="flex items-center justify-between border-b border-[var(--color-border-light)] px-4 ">
+          <Logo className="shrink-0" onNavigate={onClose} />
           <button
             type="button"
             onClick={onClose}

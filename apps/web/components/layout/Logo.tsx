@@ -16,19 +16,19 @@ export function Logo({ className }: Props) {
       <Image
         src="/nline-01.png"
         alt="Nline Global"
-        width={140}
-        height={40}
+        width={100}
+        height={100}
         priority
-        className="h-9 w-auto object-contain dark:hidden"
+        className="h-[100px] w-auto object-contain dark:hidden"
       />
       {/* Dark mode logosu */}
       <Image
         src="/nline-02.png"
         alt="Nline Global"
-        width={140}
-        height={40}
+        width={100}
+        height={100}
         priority
-        className="hidden h-9 w-auto object-contain dark:block"
+        className="hidden h-[100px] w-auto object-contain dark:block"
       />
     </Link>
   )
