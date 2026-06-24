@@ -5,13 +5,14 @@ import Image from 'next/image'
 
 interface Props {
   className?: string
+  onNavigate?: () => void
 }
 
 // Logo — light və dark moda görə uyğun şəkil
 // nline-01.png (light fon üçün) / nline-02.png (dark fon üçün)
-export function Logo({ className }: Props) {
+export function Logo({ className, onNavigate }: Props) {
   return (
-    <Link href="/" aria-label="Nline Global — Ana səhifə" className={className}>
+    <Link href="/" aria-label="Nline Global — Ana səhifə" className={className} onClick={onNavigate}>
       {/* Light mode logosu */}
       <Image
         src="/nline-01.png"
