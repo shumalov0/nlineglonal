@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Instagram, Facebook, Youtube, Mail, Phone, MapPin } from 'lucide-react'
+import { Logo } from './Logo'
 import type { SiteSettings } from '@/lib/settings'
 
 const sections = [
@@ -34,9 +35,7 @@ export function Footer({ settings }: { settings: SiteSettings }) {
         <div className="grid gap-10 lg:grid-cols-[1.5fr_2fr]">
           {/* Şirkət info */}
           <div>
-            <p className="font-display text-2xl font-bold text-[var(--color-text)]">
-              {settings.storeName ?? 'Nline Global'}
-            </p>
+            <Logo className="inline-block" />
             <p className="mt-4 max-w-sm text-sm text-[var(--color-text-secondary)]">
               Mebel aksesuarları və furnitura üzrə etibarlı seçim. Qapı qolları,
               ayaqlar, mexanizmlər, profillər və minlərlə detal.

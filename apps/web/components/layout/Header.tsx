@@ -45,8 +45,8 @@ export function Header({ categories }: Props) {
             <Menu size={20} />
           </button>
 
-          {/* Logo — solda */}
-          <Logo className="shrink-0" />
+          {/* Logo — solda (yalnız desktop; mobil sidebar-da onsuz var) */}
+          <Logo className="hidden shrink-0 md:block" />
 
           {/* Desktop nav */}
           <nav className="hidden flex-1 items-center gap-7 md:flex">
@@ -72,7 +72,7 @@ export function Header({ categories }: Props) {
           </nav>
 
           {/* Sağ actions */}
-          <div className="flex items-center gap-1 md:ml-auto">
+          <div className="flex items-center gap-1 ml-auto">
             <Link
               href="/products"
               aria-label="Axtar"
