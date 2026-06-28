@@ -47,7 +47,7 @@ function serialize(p: {
 }
 
 async function getHomeData() {
-  // Kök kateqoriyalar və alt kateqoriya id-ləri
+  // 1) Kök kateqoriyalar + alt kateqoriya id-ləri (tək sorğu)
   const roots = await prisma.category.findMany({
     where: { isActive: true, parentId: null },
     orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
@@ -60,40 +60,38 @@ async function getHomeData() {
     },
   })
 
-  // Hər kök üçün (özü + alt kateqoriyalar) məhsul sayını hesabla
-  const rootsWithCounts = await Promise.all(
-    roots.map(async (r) => {
-      const catIds = [r.id, ...r.children.map((c) => c.id)]
-      const count = await prisma.product.count({
-        where: { isActive: true, categoryId: { in: catIds } },
-      })
-      return { ...r, catIds, count }
-    })
-  )
+  // 2) Məhsul saylarını kateqoriya üzrə TƏK groupBy ilə al (paralel count əvəzinə)
+  const grouped = await prisma.product.groupBy({
+    by: ['categoryId'],
+    where: { isActive: true },
+    _count: { _all: true },
+  })
+  const countByCat = new Map<string, number>()
+  for (const g of grouped) {
+    countByCat.set(g.categoryId, g._count._all)
+  }
 
-  // Məhsulu olan kökləri sayına görə sırala
+  // 3) Hər kök üçün (özü + alt) sayı JS-də hesabla
+  const rootsWithCounts = roots.map((r) => {
+    const catIds = [r.id, ...r.children.map((c) => c.id)]
+    const count = catIds.reduce((sum, id) => sum + (countByCat.get(id) ?? 0), 0)
+    return { ...r, catIds, count }
+  })
+
   const usableRoots = rootsWithCounts
     .filter((r) => r.count > 0)
     .sort((a, b) => b.count - a.count)
 
-  // Müxtəliflik üçün ilk 4 fərqli kök kateqoriya
   const selectedRoots = usableRoots.slice(0, 4)
 
-  const [latest, circleCategories, ...rootProducts] = await Promise.all([
+  // 4) Məhsul sorğuları (kiçik paralel batch — 5 sorğu)
+  const [latest, ...rootProducts] = await Promise.all([
     prisma.product.findMany({
       where: { isActive: true },
       orderBy: { createdAt: 'desc' },
       take: 8,
       select: productSelect,
     }),
-    Promise.resolve(
-      usableRoots.slice(0, 6).map((r) => ({
-        id: r.id,
-        name: r.name,
-        slug: r.slug,
-        imageUrl: r.imageUrl,
-      }))
-    ),
     ...selectedRoots.map((r) =>
       prisma.product.findMany({
         where: { isActive: true, categoryId: { in: r.catIds } },
@@ -103,6 +101,13 @@ async function getHomeData() {
       })
     ),
   ])
+
+  const circleCategories = usableRoots.slice(0, 6).map((r) => ({
+    id: r.id,
+    name: r.name,
+    slug: r.slug,
+    imageUrl: r.imageUrl,
+  }))
 
   return {
     latest: latest.map(serialize),
