@@ -1,5 +1,6 @@
 // Admin: sayt tənzimləmələrini al / yenilə
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireAdmin } from '@/lib/server-auth'
@@ -39,6 +40,7 @@ export async function PATCH(req: NextRequest) {
       update: data,
       create: { id: 'singleton', ...data },
     })
+    revalidateTag('site-settings')
     return NextResponse.json({ data: row })
   } catch (error) {
     return handleApiError(error)

@@ -1,4 +1,5 @@
 // Sayt tənzimləmələri — əlaqə nömrələri və sosial media
+import { unstable_cache } from 'next/cache'
 import { prisma } from './db'
 
 export interface SiteSettings {
@@ -25,26 +26,30 @@ const DEFAULTS: SiteSettings = {
   storeName: 'Nline Global',
 }
 
-// Settings-i al (yoxdursa default qaytarır)
-export async function getSiteSettings(): Promise<SiteSettings> {
-  try {
-    const row = await prisma.siteSetting.findUnique({ where: { id: 'singleton' } })
-    if (!row) return DEFAULTS
-    return {
-      phoneNumber: row.phoneNumber ?? DEFAULTS.phoneNumber,
-      whatsappNumber: row.whatsappNumber ?? DEFAULTS.whatsappNumber,
-      email: row.email ?? DEFAULTS.email,
-      address: row.address ?? DEFAULTS.address,
-      instagramUrl: row.instagramUrl,
-      facebookUrl: row.facebookUrl,
-      tiktokUrl: row.tiktokUrl,
-      youtubeUrl: row.youtubeUrl,
-      storeName: row.storeName ?? DEFAULTS.storeName,
+// Settings-i al (yoxdursa default qaytarır) — cache ilə (tag: site-settings)
+export const getSiteSettings = unstable_cache(
+  async (): Promise<SiteSettings> => {
+    try {
+      const row = await prisma.siteSetting.findUnique({ where: { id: 'singleton' } })
+      if (!row) return DEFAULTS
+      return {
+        phoneNumber: row.phoneNumber ?? DEFAULTS.phoneNumber,
+        whatsappNumber: row.whatsappNumber ?? DEFAULTS.whatsappNumber,
+        email: row.email ?? DEFAULTS.email,
+        address: row.address ?? DEFAULTS.address,
+        instagramUrl: row.instagramUrl,
+        facebookUrl: row.facebookUrl,
+        tiktokUrl: row.tiktokUrl,
+        youtubeUrl: row.youtubeUrl,
+        storeName: row.storeName ?? DEFAULTS.storeName,
+      }
+    } catch {
+      return DEFAULTS
     }
-  } catch {
-    return DEFAULTS
-  }
-}
+  },
+  ['site-settings'],
+  { revalidate: 600, tags: ['site-settings'] }
+)
 
 // WhatsApp linkini formatla (rəqəmlərdən link yarat)
 export function buildWhatsappLink(number: string | null, message?: string): string | null {

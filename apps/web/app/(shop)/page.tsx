@@ -7,7 +7,9 @@ import { CategoryProductRow } from '@/components/shop/sections/CategoryProductRo
 import { StatsSection } from '@/components/shop/sections/StatsSection'
 import { Newsletter } from '@/components/shop/sections/Newsletter'
 
-export const dynamic = 'force-dynamic'
+// Caching ilə DB data transfer-i azaldılır (Neon kvotasını qorumaq üçün)
+// Hər 10 dəqiqədən bir yenilənir, ziyarətlər arası cache-dən gəlir
+export const revalidate = 600
 
 const productSelect = {
   id: true,

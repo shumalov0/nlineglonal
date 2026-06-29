@@ -6,7 +6,7 @@ import { prisma } from '@/lib/db'
 import { ProductGallery } from '@/components/shop/ProductGallery'
 import { VariantSelector } from '@/components/shop/VariantSelector'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 600
 
 interface PageProps {
   params: { slug: string }
