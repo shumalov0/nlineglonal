@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/db'
 import type { Prisma } from '@prisma/client'
 import { Hero } from '@/components/shop/sections/Hero'
@@ -7,9 +8,9 @@ import { CategoryProductRow } from '@/components/shop/sections/CategoryProductRo
 import { StatsSection } from '@/components/shop/sections/StatsSection'
 import { Newsletter } from '@/components/shop/sections/Newsletter'
 
-// Caching ilə DB data transfer-i azaldılır (Neon kvotasını qorumaq üçün)
-// Hər 10 dəqiqədən bir yenilənir, ziyarətlər arası cache-dən gəlir
-export const revalidate = 600
+// Səhifə dinamikdir (build zamanı DB-yə vurmur), amma data unstable_cache ilə
+// 10 dəqiqə cache olunur — ziyarətlər arası DB transfer minimuma düşür
+export const dynamic = 'force-dynamic'
 
 const productSelect = {
   id: true,
@@ -48,7 +49,13 @@ function serialize(p: {
   }
 }
 
-async function getHomeData() {
+const getHomeData = unstable_cache(
+  _getHomeData,
+  ['home-data'],
+  { revalidate: 600, tags: ['products', 'categories'] }
+)
+
+async function _getHomeData() {
   // 1) Kök kateqoriyalar + alt kateqoriya id-ləri (tək sorğu)
   const roots = await prisma.category.findMany({
     where: { isActive: true, parentId: null },

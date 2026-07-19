@@ -2,32 +2,37 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { ChevronRight } from 'lucide-react'
+import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { ProductGallery } from '@/components/shop/ProductGallery'
 import { VariantSelector } from '@/components/shop/VariantSelector'
 
-export const revalidate = 600
+export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: { slug: string }
 }
 
-async function getProduct(slug: string) {
-  return prisma.product.findUnique({
-    where: { slug, isActive: true },
-    include: {
-      category: true,
-      images: { orderBy: { sortOrder: 'asc' } },
-      variants: {
-        where: { isActive: true },
-        include: {
-          attributes: { include: { attributeType: true } },
+// Slug cache açarının bir hissəsi olur — hər məhsul ayrı cache olunur
+const getProduct = unstable_cache(
+  async (slug: string) =>
+    prisma.product.findUnique({
+      where: { slug, isActive: true },
+      include: {
+        category: true,
+        images: { orderBy: { sortOrder: 'asc' } },
+        variants: {
+          where: { isActive: true },
+          include: {
+            attributes: { include: { attributeType: true } },
+          },
+          orderBy: { sortOrder: 'asc' },
         },
-        orderBy: { sortOrder: 'asc' },
       },
-    },
-  })
-}
+    }),
+  ['product-detail'],
+  { revalidate: 600, tags: ['products'] }
+)
 
 export async function generateMetadata({
   params,

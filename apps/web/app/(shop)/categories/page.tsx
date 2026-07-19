@@ -1,26 +1,30 @@
 import Link from 'next/link'
+import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/db'
 
-export const revalidate = 600
+export const dynamic = 'force-dynamic'
 
-async function getCategories() {
-  return prisma.category.findMany({
-    where: { isActive: true, parentId: null },
-    orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      imageUrl: true,
-      description: true,
-      _count: { select: { products: { where: { isActive: true } } } },
-      children: {
-        where: { isActive: true },
-        select: { id: true, name: true, slug: true },
+const getCategories = unstable_cache(
+  async () =>
+    prisma.category.findMany({
+      where: { isActive: true, parentId: null },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        imageUrl: true,
+        description: true,
+        _count: { select: { products: { where: { isActive: true } } } },
+        children: {
+          where: { isActive: true },
+          select: { id: true, name: true, slug: true },
+        },
       },
-    },
-  })
-}
+    }),
+  ['categories-page'],
+  { revalidate: 600, tags: ['categories'] }
+)
 
 export default async function CategoriesPage() {
   const categories = await getCategories()
