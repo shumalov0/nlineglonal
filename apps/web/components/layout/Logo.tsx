@@ -16,8 +16,7 @@ export function Logo({ className, onNavigate }: Props) {
       {/* Light mode logosu */}
       <Image
         src="/nline-01.png"
-        alt="Nline Global"
-        width={100}
+        alt="Nline Global" 
         height={100}
         priority
         className="h-[100px] w-auto object-contain dark:hidden"
